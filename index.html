@@ -19,8 +19,8 @@ main{max-width:1180px;margin:24px auto;padding:0 15px 50px}.page{display:none}.p
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
 .card{background:linear-gradient(180deg,var(--panel),#11182c);border:1px solid var(--line);border-radius:17px;padding:17px;margin-bottom:15px;min-width:0}
 .card h2,.card h3{margin-top:0}.muted{color:var(--muted)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-input,select{background:#0d1428;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px;font:inherit;max-width:100%}
-input[type=text],input:not([type]){width:min(100%,420px)}select{min-width:170px}
+input,select,textarea{background:#0d1428;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px;font:inherit;max-width:100%}
+input[type=text],input:not([type]){width:min(100%,420px)}select{min-width:170px}textarea{width:min(100%,700px);display:block;color:var(--text);background:#0d1428;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit}.stack{display:grid;gap:13px}.stack label{display:grid;gap:6px;max-width:760px}.stack input{width:min(100%,600px)}[hidden]{display:none!important}.board-post{border:1px solid var(--line);background:#11182c;border-radius:14px;padding:15px;margin:12px 0}.board-comment{margin:8px 0 8px 18px;padding:10px;border-left:2px solid var(--blue);background:#121b32;border-radius:8px}.danger{background:#612c3c!important;border-color:#9e5367!important}.tiny{font-size:12px;padding:6px 9px}
 .status{color:var(--muted);font-size:14px;margin:10px 0}.brawler-img{height:145px;width:100%;object-fit:contain}.map-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:#0d1428}
 .pill{display:inline-block;padding:4px 9px;border-radius:999px;background:#26375f;color:#dce7ff;font-size:12px;font-weight:800}.tier-S{border-color:#ffcb55}.tier-A{border-color:#a98bff}.tier-B{border-color:#4da3ff}.tier-C{border-color:#6e7a98}
 .notice{padding:13px;border:1px solid var(--line);background:#10182d;border-radius:12px;margin:9px 0;white-space:pre-line}
@@ -39,6 +39,9 @@ small{color:var(--muted)}.warning{border-color:#8b6b31;background:#2a2418}
     <button data-page="maps">🗺️ マップ</button>
     <button data-page="player">🔎 プレイヤー検索</button>
     <button data-page="tier">🏆 Tier表</button>
+    <button data-page="aipick">🤖 AIピック</button>
+    <button data-page="community">💬 掲示板</button>
+    <button data-page="admin">⚙️ 管理画面</button>
   </nav>
 </header>
 <main>
@@ -56,6 +59,11 @@ small{color:var(--muted)}.warning{border-color:#8b6b31;background:#2a2418}
       <div class="card"><h2>🎮 キャラクター</h2><p class="muted">BrawlAPIのキャラクターデータを表示。</p><strong id="homeBrawlerCount">読み込み中…</strong></div>
       <div class="card"><h2>🗺️ マップ</h2><p class="muted">ゲームモードで絞り込み可能。</p><strong id="homeMapCount">読み込み中…</strong></div>
       <div class="card"><h2>🔄 自動更新</h2><p class="muted">ページを開いている間、15分ごとにデータを再取得。</p><strong>15分間隔</strong></div>
+    </div>
+    <div class="grid">
+      <div class="card"><h2>📢 お知らせ</h2><div id="siteAnnouncements"><p class="muted">読み込み中…</p></div></div>
+      <div class="card"><h2>🏆 大会情報</h2><div id="siteTournaments"><p class="muted">読み込み中…</p></div></div>
+      <div class="card"><h2>👥 メンバー</h2><div id="siteMembers"><p class="muted">読み込み中…</p></div></div>
     </div>
     <div class="card warning"><strong>データについて</strong><p class="muted">キャラクター・マップ一覧はBrawlAPI、プレイヤー情報とマップローテーションは公式Brawl Stars APIを使用します。Tier表は統計データがない場合、公式のランキングではなく手動メモとして表示します。</p></div>
   </section>
@@ -91,6 +99,70 @@ small{color:var(--muted)}.warning{border-color:#8b6b31;background:#2a2418}
       <div class="row"><input id="playerTag" placeholder="#プレイヤータグ" autocomplete="off"><button class="primary" onclick="fetchPlayerData()">検索</button></div>
       <p id="playerStatus" class="status"></p>
       <div id="playerResult"></div>
+    </div>
+  </section>
+
+
+
+  <section id="aipick" class="page">
+    <div class="hero"><h1>🤖 BSMGaming AIピック</h1><p>ゲームモードとマップ、味方・相手のピックを入力すると、キャラクターの役割情報を使って候補を提案する試作版です。公式の勝率データや本物の生成AIを使った判定ではありません。</p></div>
+    <div class="card">
+      <div class="stack">
+        <label>ゲームモード<br><select id="pickMode"><option value="gem">エメラルドハント</option><option value="ball">ブロストライカー</option><option value="knockout">ノックアウト</option><option value="bounty">賞金稼ぎ</option><option value="hotzone">ホットゾーン</option><option value="heist">強奪</option><option value="showdown">ソロ/デュオ・バトロイ</option><option value="other">その他</option></select></label>
+        <label>マップ名（任意）<input id="pickMap" maxlength="100" placeholder="例：今日のマップ名"></label>
+        <label>味方が選んだキャラ（任意）<input id="pickAllies" maxlength="300" placeholder="キャラ名をカンマ区切りで入力"></label>
+        <label>相手が選んだキャラ（任意）<input id="pickEnemies" maxlength="300" placeholder="キャラ名をカンマ区切りで入力"></label>
+        <button class="primary" id="runAIPick" type="button">おすすめピックを出す</button>
+      </div>
+      <div id="aiPickStatus" class="status"></div>
+      <div id="aiPickResults" class="grid"></div>
+    </div>
+  </section>
+
+  <section id="community" class="page">
+    <div class="hero"><h1>💬 BSMGaming 掲示板</h1><p>作戦相談・大会の質問・チームへのメッセージを投稿できます。投稿は管理者の確認後に公開されます。</p></div>
+    <div class="card">
+      <h2>新しい投稿</h2>
+      <form id="boardPostForm" class="stack">
+        <label>投稿者名<br><input id="boardNickname" maxlength="24" required placeholder="ニックネーム"></label>
+        <label>タイトル<br><input id="boardTitle" maxlength="80" required placeholder="投稿タイトル"></label>
+        <label>本文<br><textarea id="boardBody" maxlength="1500" required rows="4" placeholder="内容を書いてね"></textarea></label>
+        <button class="primary" type="submit">投稿を申請する</button>
+      </form>
+      <p class="muted">個人情報・パスワード・電話番号などは投稿しないでください。送信後、管理者が承認すると公開されます。</p>
+      <div id="boardPostStatus" class="status"></div>
+    </div>
+    <h2>公開中の投稿</h2><div id="boardList"><p class="muted">掲示板を読み込み中…</p></div>
+  </section>
+  <section id="admin" class="page">
+    <div class="hero"><h1>⚙️ BSMGaming 管理画面</h1><p>管理者だけがログインして、お知らせ・大会・メンバー・Tier・掲示板を管理できます。</p></div>
+    <div id="adminLoggedOut" class="card">
+      <h2>管理者ログイン</h2>
+      <p class="muted">Supabaseで作成した管理者アカウントを使ってください。一般ユーザー向けの新規登録機能はありません。</p>
+      <form id="adminLoginForm" class="stack">
+        <label>メールアドレス<br><input id="adminEmail" type="email" required autocomplete="username" placeholder="管理者メールアドレス"></label>
+        <label>パスワード<br><input id="adminPassword" type="password" required autocomplete="current-password" placeholder="パスワード"></label>
+        <button class="primary" type="submit">ログイン</button>
+      </form>
+      <div id="adminLoginStatus" class="status"></div>
+    </div>
+    <div id="adminLoggedIn" hidden>
+      <div class="card"><div class="row"><h2 style="margin:0">管理メニュー</h2><button id="adminLogout">ログアウト</button></div><p id="adminWho" class="muted"></p><div id="adminStatus" class="status"></div></div>
+      <div class="card">
+        <h2>お知らせ・大会・メンバー・Tierを管理</h2>
+        <form id="adminContentForm" class="stack">
+          <label>管理する種類<br><select id="adminTable"><option value="announcements">お知らせ</option><option value="tournaments">大会</option><option value="members">メンバー</option><option value="tiers">Tier</option></select></label>
+          <label>タイトル / 名前 / キャラ名<br><input id="adminTitle" maxlength="100" required placeholder="タイトルなど"></label>
+          <label>本文 / 説明 / メモ<br><textarea id="adminBody" rows="3" maxlength="2000" placeholder="説明など（任意）"></textarea></label>
+          <div id="adminExtraFields"></div>
+          <button class="primary" type="submit">保存する</button>
+        </form>
+        <p class="muted">この簡易版は新規追加と削除に対応しています。Tierは統計ベースの自動ランキングではなく、管理者が設定する手動評価です。</p>
+        <div id="adminContentList"></div>
+      </div>
+      <div class="card">
+        <h2>掲示板の承認待ち</h2><div id="pendingBoardList"><p class="muted">読み込み中…</p></div>
+      </div>
     </div>
   </section>
 
@@ -281,6 +353,198 @@ $("mapSearch").addEventListener("input", renderMaps);
 $("mapMode").addEventListener("change", renderMaps);
 loadBrawlers(); loadMaps(); loadRotation();
 setInterval(() => { loadBrawlers(); loadMaps(); loadRotation(); }, 15 * 60 * 1000);
+
+
+// --- AI pick prototype: role-based recommendation, not official win-rate data ---
+function bsmPickRole(b) {
+  const c = b?.class?.name || b?.class || b?.role || "";
+  return String(c).toLowerCase();
+}
+function bsmPickRecommend() {
+  const status=document.getElementById("aiPickStatus"), out=document.getElementById("aiPickResults");
+  out.replaceChildren();
+  if (!Array.isArray(latestBrawlers) || !latestBrawlers.length) { status.textContent="先にキャラクター一覧を読み込んでください。"; return; }
+  const mode=document.getElementById("pickMode").value;
+  const map=document.getElementById("pickMap").value.trim().toLowerCase();
+  const picked=(document.getElementById("pickAllies").value+","+document.getElementById("pickEnemies").value)
+    .split(/[、,，]/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+  const roleHints={
+    gem:["controller","support","damage","fighter"],
+    ball:["tank","damage","support","assassin"],
+    knockout:["marksman","damage","artillery"],
+    bounty:["marksman","damage","artillery"],
+    hotzone:["controller","support","damage","tank"],
+    heist:["damage","tank","fighter"],
+    showdown:["assassin","tank","damage","survival"],
+    other:["damage","fighter","support"]
+  };
+  const hints=roleHints[mode]||roleHints.other;
+  const scored=latestBrawlers.map(b=>{
+    const name=String(b.name||"");
+    const role=bsmPickRole(b);
+    if (!name || picked.includes(name.toLowerCase())) return null;
+    let score=0, reasons=[];
+    const match=hints.findIndex(h=>role.includes(h));
+    if(match>=0){score += Math.max(2,7-match); reasons.push("モードに合う役割候補");}
+    if (map && String(b.name||"").toLowerCase().includes(map)) { score+=1; }
+    const rarity=String(b.rarity?.name||"").toLowerCase();
+    if (rarity.includes("mythic") || rarity.includes("legendary")) score+=0.2;
+    if (!reasons.length) reasons.push("役割情報が少ないため候補として表示");
+    return {b,name,role,score,reasons};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score || a.name.localeCompare(b.name)).slice(0,3);
+  if(!scored.length){status.textContent="候補がありません。入力したキャラ名を確認してください。";return;}
+  scored.forEach((item,i)=>{
+    const card=document.createElement("div");card.className="card";
+    const img=document.createElement("img");img.className="brawler-img";img.loading="lazy";img.alt=item.name;img.src=item.b.imageUrl||item.b.imageUrl2||"";
+    img.onerror=()=>img.style.display="none";
+    card.append(img,makeText("h3","",`${i+1}. ${item.name}`),makeText("p","muted",`役割：${item.role||"不明"}`),makeText("p","","理由："+item.reasons.join("・")));
+    out.append(card);
+  });
+  status.textContent="候補を表示しました。これは役割ベースの試作版で、勝率・最新メタを保証するものではありません。";
+}
+document.getElementById("runAIPick")?.addEventListener("click",bsmPickRecommend);
+
+// --- BSMGaming community, bulletin board and admin panel ---
+const bsm = { config: null, accessToken: sessionStorage.getItem("bsm_admin_token") || "", email: sessionStorage.getItem("bsm_admin_email") || "", siteData: null };
+async function bsmJSON(url, options = {}) {
+  const response = await fetch(url, options);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  return data;
+}
+async function bsmConfig() {
+  if (!bsm.config) bsm.config = await bsmJSON("/api/config");
+  return bsm.config;
+}
+function bsmEscape(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function bsmDate(value) {
+  try { return new Date(value).toLocaleString("ja-JP"); } catch { return ""; }
+}
+async function bsmLoadSite() {
+  const list = document.getElementById("boardList");
+  if (!list) return;
+  try {
+    bsm.siteData = await bsmJSON("/api/community?action=site");
+    const showRecords = (id, rows, titleKey) => {
+      const target = document.getElementById(id); if (!target) return; target.replaceChildren();
+      if (!rows?.length) { target.innerHTML = '<p class="muted">まだ登録されていません。</p>'; return; }
+      rows.forEach(row => { const item=document.createElement("div"); item.className="notice";
+        item.innerHTML=`<strong>${bsmEscape(row[titleKey] || row.title || row.name || row.brawler_name || "")}</strong><p style="white-space:pre-wrap">${bsmEscape(row.body || row.role || (row.tier ? "Tier "+row.tier : ""))}</p>${row.date_text ? `<small>${bsmEscape(row.date_text)}</small>` : ""}`;
+        target.append(item);
+      });
+    };
+    showRecords("siteAnnouncements", bsm.siteData.announcements, "title");
+    showRecords("siteTournaments", bsm.siteData.tournaments, "title");
+    showRecords("siteMembers", bsm.siteData.members, "name");
+    const posts = bsm.siteData.board_posts || [];
+    list.replaceChildren();
+    if (!posts.length) { list.innerHTML = '<p class="muted">まだ公開投稿はありません。</p>'; }
+    posts.forEach(post => {
+      const article = document.createElement("article"); article.className = "board-post";
+      article.innerHTML = `<h3>${bsmEscape(post.title)}</h3><p class="muted">${bsmEscape(post.nickname)} ・ ${bsmEscape(bsmDate(post.created_at))}</p><p style="white-space:pre-wrap">${bsmEscape(post.body)}</p>`;
+      const comments = (bsm.siteData.board_comments || []).filter(c => c.post_id === post.id);
+      comments.forEach(c => {
+        const div = document.createElement("div"); div.className = "board-comment";
+        div.innerHTML = `<strong>${bsmEscape(c.nickname)}</strong><small> ・ ${bsmEscape(bsmDate(c.created_at))}</small><p style="white-space:pre-wrap;margin-bottom:0">${bsmEscape(c.body)}</p>`;
+        article.append(div);
+      });
+      const form = document.createElement("form"); form.className = "stack";
+      form.innerHTML = `<label>返信する名前<br><input name="nickname" maxlength="24" required placeholder="ニックネーム"></label><label>返信内容<br><textarea name="body" maxlength="1000" rows="2" required placeholder="返信を書いてね"></textarea></label><button class="tiny" type="submit">返信を申請</button><small>返信も承認後に公開されます。</small>`;
+      form.addEventListener("submit", async ev => {
+        ev.preventDefault(); const fd = new FormData(form);
+        try { await bsmJSON("/api/community?action=comment", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({post_id:post.id,nickname:fd.get("nickname"),body:fd.get("body")})}); form.reset(); alert("返信を申請したで！管理者の承認を待ってな。"); }
+        catch(e) { alert("送信できませんでした：" + e.message); }
+      });
+      article.append(form); list.append(article);
+    });
+  } catch (e) { list.innerHTML = `<p class="muted">掲示板を読み込めません：${bsmEscape(e.message)}<br>管理者がSupabaseの設定を完了しているか確認してください。</p>`; }
+}
+document.getElementById("boardPostForm")?.addEventListener("submit", async ev => {
+  ev.preventDefault(); const status = document.getElementById("boardPostStatus");
+  try {
+    await bsmJSON("/api/community?action=post", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nickname:document.getElementById("boardNickname").value,title:document.getElementById("boardTitle").value,body:document.getElementById("boardBody").value})});
+    ev.target.reset(); status.textContent = "投稿を申請したで！管理者の承認後に公開されます。";
+  } catch(e) { status.textContent = "送信失敗：" + e.message; }
+});
+function bsmAuthHeaders() { return {"Content-Type":"application/json","Authorization":"Bearer "+bsm.accessToken}; }
+async function bsmAdminAPI(action, payload={}) {
+  return bsmJSON("/api/community?action="+encodeURIComponent(action), {method:"POST",headers:bsmAuthHeaders(),body:JSON.stringify(payload)});
+}
+function bsmShowAdmin() {
+  document.getElementById("adminLoggedOut").hidden = !!bsm.accessToken;
+  document.getElementById("adminLoggedIn").hidden = !bsm.accessToken;
+  if (bsm.accessToken) { document.getElementById("adminWho").textContent = "ログイン中：" + bsm.email; bsmLoadAdmin(); }
+}
+document.getElementById("adminLoginForm")?.addEventListener("submit", async ev => {
+  ev.preventDefault(); const status = document.getElementById("adminLoginStatus"); status.textContent = "ログイン中…";
+  try {
+    const cfg = await bsmConfig();
+    const res = await fetch(cfg.supabaseUrl + "/auth/v1/token?grant_type=password", {method:"POST",headers:{"Content-Type":"application/json","apikey":cfg.supabaseAnonKey},body:JSON.stringify({email:document.getElementById("adminEmail").value,password:document.getElementById("adminPassword").value})});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.msg || data.message || data.error_description || "ログインできません。メール・パスワードを確認してください。");
+    bsm.accessToken = data.access_token; bsm.email = data.user?.email || document.getElementById("adminEmail").value;
+    sessionStorage.setItem("bsm_admin_token",bsm.accessToken); sessionStorage.setItem("bsm_admin_email",bsm.email);
+    status.textContent = ""; bsmShowAdmin();
+  } catch(e) { status.textContent = e.message; }
+});
+document.getElementById("adminLogout")?.addEventListener("click", () => {
+  bsm.accessToken=""; bsm.email=""; sessionStorage.removeItem("bsm_admin_token"); sessionStorage.removeItem("bsm_admin_email"); bsmShowAdmin();
+});
+function bsmExtraFields() {
+  const table = document.getElementById("adminTable").value;
+  const el = document.getElementById("adminExtraFields");
+  if (table === "tournaments") el.innerHTML = '<label>開催日・日時<br><input id="extraDate" maxlength="100" placeholder="例：10月25日 20:00"></label>';
+  else if (table === "members") el.innerHTML = '<label>役割<br><input id="extraRole" maxlength="60" placeholder="例：リーダー"></label><label>プレイヤータグ（任意）<br><input id="extraTag" maxlength="20" placeholder="例：ABC123"></label>';
+  else if (table === "tiers") el.innerHTML = '<label>Tier<br><select id="extraTier"><option>S</option><option>A</option><option>B</option><option>C</option></select></label>';
+  else el.innerHTML = "";
+}
+document.getElementById("adminTable")?.addEventListener("change", bsmExtraFields);
+document.getElementById("adminContentForm")?.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const table = document.getElementById("adminTable").value;
+  const record = {title:document.getElementById("adminTitle").value,body:document.getElementById("adminBody").value};
+  if (table==="tournaments") record.date_text=document.getElementById("extraDate")?.value || "";
+  if (table==="members") {record.role=document.getElementById("extraRole")?.value || ""; record.player_tag=document.getElementById("extraTag")?.value || "";}
+  if (table==="tiers") {record.brawler_name=record.title; record.tier=document.getElementById("extraTier")?.value || "B"; delete record.title;}
+  try { await bsmAdminAPI("save",{table,record}); document.getElementById("adminTitle").value=""; document.getElementById("adminBody").value=""; document.getElementById("adminStatus").textContent="保存しました。"; await bsmLoadAdmin(); }
+  catch(e) { document.getElementById("adminStatus").textContent="保存失敗："+e.message; }
+});
+async function bsmLoadAdmin() {
+  try {
+    const data = await bsmAdminAPI("admin_data");
+    const list = document.getElementById("adminContentList"); list.replaceChildren();
+    const table = document.getElementById("adminTable").value;
+    (data[table] || []).forEach(row => {
+      const item=document.createElement("div"); item.className="notice";
+      const title=row.title || row.brawler_name || row.name || "(無題)";
+      item.innerHTML=`<strong>${bsmEscape(title)}</strong><p class="muted">${bsmEscape(row.body || row.role || (row.tier ? "Tier "+row.tier : ""))}</p>`;
+      const del=document.createElement("button"); del.className="danger tiny"; del.textContent="削除";
+      del.addEventListener("click",async()=>{if(!confirm("この項目を削除する？"))return;try{await bsmAdminAPI("delete",{table,id:row.id});await bsmLoadAdmin()}catch(e){alert(e.message)}});
+      item.append(del); list.append(item);
+    });
+    const pending=document.getElementById("pendingBoardList"); pending.replaceChildren();
+    const items=[...(data.pending_posts||[]).map(x=>({...x,_table:"board_posts",_label:"投稿"})),...(data.pending_comments||[]).map(x=>({...x,_table:"board_comments",_label:"返信"}))];
+    if(!items.length) pending.innerHTML='<p class="muted">承認待ちはありません。</p>';
+    items.forEach(row=>{
+      const item=document.createElement("div");item.className="notice";
+      item.innerHTML=`<strong>${bsmEscape(row._label)}：${bsmEscape(row.title||row.nickname||"")}</strong><p style="white-space:pre-wrap">${bsmEscape(row.body)}</p><small>${bsmEscape(bsmDate(row.created_at))}</small><div class="row" style="margin-top:8px"></div>`;
+      const actions=item.querySelector(".row");
+      const approve=document.createElement("button");approve.className="primary tiny";approve.textContent="承認して公開";approve.onclick=async()=>{try{await bsmAdminAPI("moderate",{table:row._table,id:row.id,status:"approved"});await bsmLoadAdmin();await bsmLoadSite()}catch(e){alert(e.message)}};
+      const reject=document.createElement("button");reject.className="danger tiny";reject.textContent="削除";reject.onclick=async()=>{if(!confirm("削除する？"))return;try{await bsmAdminAPI("delete",{table:row._table,id:row.id});await bsmLoadAdmin()}catch(e){alert(e.message)}};
+      actions.append(approve,reject);pending.append(item);
+    });
+  } catch(e) {
+    document.getElementById("adminStatus").textContent="管理データを読み込めません："+e.message;
+    if(String(e.message).includes("ログイン") || String(e.message).includes("管理者")) { bsm.accessToken="";sessionStorage.removeItem("bsm_admin_token");bsmShowAdmin(); }
+  }
+}
+document.getElementById("adminTable") && bsmExtraFields();
+document.querySelectorAll('[data-page="community"]').forEach(el=>el.addEventListener("click", bsmLoadSite));
+document.querySelectorAll('[data-page="admin"]').forEach(el=>el.addEventListener("click", bsmShowAdmin));
+bsmLoadSite(); bsmShowAdmin();
+
 </script>
 </body>
 </html>
