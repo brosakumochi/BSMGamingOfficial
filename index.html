@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10152a">
+<title>BSMGaming | Brawl Stars Portal</title>
+<style>
+:root{--bg:#0b1020;--panel:#151d35;--panel2:#1d2948;--text:#f4f7ff;--muted:#aab5d2;--blue:#4da3ff;--gold:#ffd166;--pink:#ff5ca8;--line:#2d3a60}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#1b2a50 0,#0b1020 48%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:22px 16px 16px;text-align:center;border-bottom:1px solid var(--line);background:#0b1020dd;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+.logo{font-size:clamp(25px,5vw,38px);font-weight:1000;letter-spacing:1px}.logo span{color:var(--gold)}header p{margin:5px 0 0;color:var(--muted)}
+nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:15px}
+button,.navbtn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
+button:hover,.navbtn:hover{border-color:var(--blue);transform:translateY(-1px)}button.primary{background:linear-gradient(135deg,#287df0,#7957ff);border:0}
+main{max-width:1180px;margin:24px auto;padding:0 15px 50px}.page{display:none}.page.active{display:block}
+.hero{padding:30px;border-radius:22px;background:linear-gradient(120deg,#223b72,#5b3c91);border:1px solid #5269a6;margin-bottom:18px}
+.hero h1{font-size:clamp(28px,5vw,46px);margin:0 0 10px}.hero p{color:#e3e9ff;max-width:700px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.card{background:linear-gradient(180deg,var(--panel),#11182c);border:1px solid var(--line);border-radius:17px;padding:17px;margin-bottom:15px;min-width:0}
+.card h2,.card h3{margin-top:0}.muted{color:var(--muted)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,select{background:#0d1428;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px;font:inherit;max-width:100%}
+input[type=text],input:not([type]){width:min(100%,420px)}select{min-width:170px}
+.status{color:var(--muted);font-size:14px;margin:10px 0}.brawler-img{height:145px;width:100%;object-fit:contain}.map-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:#0d1428}
+.pill{display:inline-block;padding:4px 9px;border-radius:999px;background:#26375f;color:#dce7ff;font-size:12px;font-weight:800}.tier-S{border-color:#ffcb55}.tier-A{border-color:#a98bff}.tier-B{border-color:#4da3ff}.tier-C{border-color:#6e7a98}
+.notice{padding:13px;border:1px solid var(--line);background:#10182d;border-radius:12px;margin:9px 0;white-space:pre-line}
+footer{text-align:center;color:var(--muted);padding:24px;border-top:1px solid var(--line);font-size:13px}
+small{color:var(--muted)}.warning{border-color:#8b6b31;background:#2a2418}
+@media(max-width:600px){.hero{padding:22px}.card{padding:14px}nav button{padding:9px 10px;font-size:13px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">BSM<span>Gaming</span></div>
+  <p>ブロスタ攻略・キャラクター図鑑・マップ・プレイヤー検索</p>
+  <nav>
+    <button data-page="home">🏠 ホーム</button>
+    <button data-page="brawlers">🎮 キャラクター</button>
+    <button data-page="maps">🗺️ マップ</button>
+    <button data-page="player">🔎 プレイヤー検索</button>
+    <button data-page="tier">🏆 Tier表</button>
+  </nav>
+</header>
+<main>
+  <section id="home" class="page active">
+    <div class="hero">
+      <h1>WELCOME TO BSMGaming</h1>
+      <p>ブロスタのキャラクターやマップをチェック！プレイヤータグから公式APIのプロフィールも検索できる、BSMGamingの攻略ポータル。</p>
+      <div class="row">
+        <button class="primary" data-page="brawlers">キャラクターを見る</button>
+        <button data-page="maps">マップを見る</button>
+        <button data-page="player">プレイヤー検索</button>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card"><h2>🎮 キャラクター</h2><p class="muted">BrawlAPIのキャラクターデータを表示。</p><strong id="homeBrawlerCount">読み込み中…</strong></div>
+      <div class="card"><h2>🗺️ マップ</h2><p class="muted">ゲームモードで絞り込み可能。</p><strong id="homeMapCount">読み込み中…</strong></div>
+      <div class="card"><h2>🔄 自動更新</h2><p class="muted">ページを開いている間、15分ごとにデータを再取得。</p><strong>15分間隔</strong></div>
+    </div>
+    <div class="card warning"><strong>データについて</strong><p class="muted">キャラクター・マップ一覧はBrawlAPI、プレイヤー情報とマップローテーションは公式Brawl Stars APIを使用します。Tier表は統計データがない場合、公式のランキングではなく手動メモとして表示します。</p></div>
+  </section>
+
+  <section id="brawlers" class="page">
+    <div class="card">
+      <h2>🎮 キャラクター図鑑</h2>
+      <div class="row"><input id="brawlerSearch" placeholder="キャラクター名で検索"><button onclick="loadBrawlers()">再読み込み</button></div>
+      <p id="brawlerStatus" class="status">読み込み中…</p>
+      <div id="brawlerList" class="grid"></div>
+    </div>
+  </section>
+
+  <section id="maps" class="page">
+    <div class="card">
+      <h2>🗺️ マップ一覧</h2>
+      <div class="row"><input id="mapSearch" placeholder="マップ名で検索"><select id="mapMode"><option value="">すべてのモード</option></select><button onclick="loadMaps()">再読み込み</button></div>
+      <p id="mapStatus" class="status">読み込み中…</p>
+      <div id="mapList" class="grid"></div>
+    </div>
+    <div class="card">
+      <h2>⏱️ 現在のマップローテーション</h2>
+      <p id="rotationStatus" class="status">読み込み中…</p>
+      <button onclick="loadRotation()">ローテーションを更新</button>
+      <div id="rotationList"></div>
+    </div>
+  </section>
+
+  <section id="player" class="page">
+    <div class="card">
+      <h2>🔎 プレイヤー検索（公式API）</h2>
+      <p class="muted">プレイヤータグを入力。例：#ABC123</p>
+      <div class="row"><input id="playerTag" placeholder="#プレイヤータグ" autocomplete="off"><button class="primary" onclick="fetchPlayerData()">検索</button></div>
+      <p id="playerStatus" class="status"></p>
+      <div id="playerResult"></div>
+    </div>
+  </section>
+
+  <section id="tier" class="page">
+    <div class="card">
+      <h2>🏆 BSMGaming Tierメモ</h2>
+      <p class="muted">ここに表示する評価は編集用のサンプルです。勝率・使用率を取得していないため、公式・統計ベースの最新Tier表ではありません。</p>
+      <p id="tierStatus" class="status"></p>
+      <div id="tierList" class="grid"></div>
+    </div>
+  </section>
+</main>
+<footer>BSMGaming Fan Portal · Brawl Stars is a trademark of its respective owner. This is an unofficial fan project.</footer>
+<script>
+const $ = id => document.getElementById(id);
+const BRAWLAPI = "https://api.brawlapi.com/v1";
+let latestBrawlers = [];
+let latestMaps = [];
+const tierNotes = {}; // 必要に応じてキャラクター名をキーにして手動評価を追加
+
+function toast(message) {
+  const status = $("playerStatus");
+  status.textContent = message;
+}
+document.querySelectorAll("[data-page]").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+    const target = $(button.dataset.page);
+    if (target) target.classList.add("active");
+    window.scrollTo({top: 0, behavior: "smooth"});
+  });
+});
+async function getJSON(url) {
+  const response = await fetch(url);
+  let data;
+  try { data = await response.json(); } catch { data = {}; }
+  if (!response.ok) throw new Error(data.error || data.message || `HTTP ${response.status}`);
+  return data;
+}
+function makeText(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  el.textContent = text ?? "";
+  return el;
+}
+async function loadBrawlers() {
+  $("brawlerStatus").textContent = "キャラクターを取得中…";
+  try {
+    const data = await getJSON(`${BRAWLAPI}/brawlers`);
+    latestBrawlers = Array.isArray(data.list) ? data.list : (Array.isArray(data.items) ? data.items : []);
+    renderBrawlers();
+    renderTier();
+    $("homeBrawlerCount").textContent = `${latestBrawlers.length}体のデータ`;
+    $("brawlerStatus").textContent = `${latestBrawlers.length}体のキャラクターデータを取得しました。`;
+  } catch (error) {
+    $("brawlerStatus").textContent = `取得失敗：${error.message}。時間をおいて再読み込みしてください。`;
+    $("homeBrawlerCount").textContent = "取得できませんでした";
+  }
+}
+function renderBrawlers() {
+  const query = $("brawlerSearch").value.trim().toLocaleLowerCase();
+  const list = $("brawlerList");
+  list.replaceChildren();
+  const filtered = latestBrawlers.filter(b => String(b.name || "").toLocaleLowerCase().includes(query));
+  if (!filtered.length) list.append(makeText("p", "muted", "該当するキャラクターがありません。"));
+  filtered.forEach(b => {
+    const card = document.createElement("article"); card.className = "card";
+    const img = document.createElement("img"); img.className = "brawler-img";
+    img.src = b.imageUrl2 || b.imageUrl || b.imageUrl3 || ""; img.alt = b.name || "キャラクター"; img.loading = "lazy";
+    img.onerror = () => { img.style.display = "none"; };
+    card.append(img, makeText("h3", "", b.name || "名前不明"));
+    card.append(makeText("p", "muted", b.rarity?.name || "レア度情報なし"));
+    list.append(card);
+  });
+}
+async function loadMaps() {
+  $("mapStatus").textContent = "マップを取得中…";
+  try {
+    const data = await getJSON(`${BRAWLAPI}/maps`);
+    latestMaps = Array.isArray(data.list) ? data.list : (Array.isArray(data.items) ? data.items : []);
+    const select = $("mapMode"); const previous = select.value;
+    const modes = new Map();
+    latestMaps.forEach(map => { if (map.gameMode?.id != null) modes.set(String(map.gameMode.id), map.gameMode.name || "モード不明"); });
+    select.replaceChildren();
+    select.append(new Option("すべてのモード", ""));
+    modes.forEach((name, id) => select.append(new Option(name, id)));
+    if (modes.has(previous)) select.value = previous;
+    renderMaps();
+    $("homeMapCount").textContent = `${latestMaps.length}件のデータ`;
+    $("mapStatus").textContent = `${latestMaps.length}件のマップデータを取得しました。`;
+  } catch (error) {
+    $("mapStatus").textContent = `取得失敗：${error.message}。時間をおいて再読み込みしてください。`;
+    $("homeMapCount").textContent = "取得できませんでした";
+  }
+}
+function renderMaps() {
+  const list = $("mapList"); list.replaceChildren();
+  const query = $("mapSearch").value.trim().toLocaleLowerCase();
+  const mode = $("mapMode").value;
+  const maps = latestMaps.filter(map =>
+    String(map.name || "").toLocaleLowerCase().includes(query) &&
+    (!mode || String(map.gameMode?.id) === mode)
+  );
+  if (!maps.length) list.append(makeText("p", "muted", "該当するマップがありません。"));
+  maps.forEach(map => {
+    const card = document.createElement("article"); card.className = "card";
+    const img = document.createElement("img"); img.className = "map-img";
+    img.src = map.imageUrl || map.imageUrl2 || ""; img.alt = map.name || "マップ"; img.loading = "lazy";
+    img.onerror = () => { img.style.display = "none"; };
+    card.append(img, makeText("h3", "", map.name || "名前不明"));
+    card.append(makeText("p", "muted", map.gameMode?.name || "モード情報なし"));
+    list.append(card);
+  });
+}
+async function loadRotation() {
+  $("rotationStatus").textContent = "公式APIに接続中…";
+  $("rotationList").replaceChildren();
+  try {
+    const data = await getJSON("/api/events");
+    const events = Array.isArray(data.events) ? data.events : [];
+    if (!events.length) {
+      $("rotationStatus").textContent = "イベントデータが空でした。公式APIの応答を確認してください。";
+      return;
+    }
+    events.forEach(item => {
+      const event = item.event || item;
+      const map = event.map || {};
+      const mode = event.mode || {};
+      const name = typeof map === "string" ? map : (map.name || "マップ名不明");
+      const modeName = typeof mode === "string" ? mode : (mode.name || "モード不明");
+      const card = document.createElement("div"); card.className = "notice";
+      card.append(makeText("strong", "", name), makeText("p", "muted", modeName));
+      if (item.startTime) card.append(makeText("small", "", `開始：${item.startTime}`));
+      $("rotationList").append(card);
+    });
+    $("rotationStatus").textContent = `更新日時：${new Date().toLocaleString("ja-JP")}`;
+  } catch (error) {
+    $("rotationStatus").textContent = `取得失敗：${error.message}`;
+  }
+}
+async function fetchPlayerData() {
+  const tag = $("playerTag").value.trim().replace(/^#/, "").toUpperCase();
+  $("playerResult").replaceChildren();
+  if (!tag || !/^[A-Z0-9]+$/.test(tag)) { toast("正しいプレイヤータグを入力してください。"); return; }
+  toast("公式APIで検索中…");
+  try {
+    const data = await getJSON(`/api/player?tag=${encodeURIComponent(tag)}`);
+    const card = document.createElement("div"); card.className = "card";
+    card.append(makeText("h2", "", data.name || "名前不明"));
+    card.append(makeText("p", "muted", `タグ：#${tag}`));
+    const stats = [
+      ["トロフィー", data.trophies], ["最高トロフィー", data.highestTrophies],
+      ["3対3勝利数", data["3vs3Victories"]], ["ソロ勝利数", data.soloVictories],
+      ["デュオ勝利数", data.duoVictories], ["経験値レベル", data.expLevel],
+      ["クラブ", data.club?.name || "未所属"]
+    ];
+    const grid = document.createElement("div"); grid.className = "grid";
+    stats.forEach(([label, value]) => {
+      const item = document.createElement("div"); item.className = "notice";
+      item.append(makeText("small", "", label), makeText("h3", "", value ?? "—"));
+      grid.append(item);
+    });
+    card.append(grid); $("playerResult").append(card);
+    toast("検索が完了しました。");
+  } catch (error) {
+    toast(`検索失敗：${error.message}`);
+  }
+}
+function renderTier() {
+  const list = $("tierList"); list.replaceChildren();
+  $("tierStatus").textContent = "統計ベースのTierデータは接続されていません。以下は手動評価用の枠です。";
+  const groups = [
+    {tier:"S",desc:"手動評価・未設定"},
+    {tier:"A",desc:"手動評価・未設定"},
+    {tier:"B",desc:"手動評価・未設定"},
+    {tier:"C",desc:"手動評価・未設定"}
+  ];
+  groups.forEach(group => {
+    const card = document.createElement("div"); card.className = `card tier-${group.tier}`;
+    card.append(makeText("h2", "", `${group.tier} Tier`), makeText("p", "muted", group.desc));
+    const names = Object.entries(tierNotes).filter(([,v]) => v === group.tier).map(([name]) => name);
+    card.append(makeText("p", "", names.length ? names.join("、") : "キャラクター未設定"));
+    list.append(card);
+  });
+}
+$("brawlerSearch").addEventListener("input", renderBrawlers);
+$("mapSearch").addEventListener("input", renderMaps);
+$("mapMode").addEventListener("change", renderMaps);
+loadBrawlers(); loadMaps(); loadRotation();
+setInterval(() => { loadBrawlers(); loadMaps(); loadRotation(); }, 15 * 60 * 1000);
+</script>
+</body>
+</html>
